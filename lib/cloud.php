@@ -1,10 +1,27 @@
 <?php
-// languages/english.php
+// lib/HetznerCloud.php
 
-$_LANG['letsEncryptSSL'] = "Let's Encrypt SSL Certificate";
-$_LANG['domain'] = "Domain";
-$_LANG['email'] = "Email";
-$_LANG['issueSSL'] = "Issue SSL Certificate";
-$_LANG['txtRecordFailure'] = "Failed to add DNS TXT record for validation.";
-$_LANG['sslIssued'] = "SSL Certificate successfully issued!";
-$_LANG['apiKeyError'] = "API keys are not available for Hetzner Cloud or DNS.";
+class HetznerCloud {
+    private $apiKey;
+    private $apiUrl = 'https://api.hetzner.cloud/v1/';
+
+    public function __construct($apiKey) {
+        $this->apiKey = $apiKey;
+    }
+
+    public function listServers() {
+        $url = $this->apiUrl . 'servers';
+        $headers = ['Authorization: Bearer ' . $this->apiKey];
+        return $this->apiRequest($url, $headers);
+    }
+
+    private function apiRequest($url, $headers) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        $response = curl_exec($ch);
+        curl_close($ch);
+        return json_decode($response, true);
+    }
+}
